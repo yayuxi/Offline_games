@@ -39,18 +39,37 @@ void start(struct Board* board) {
             board->hidden[i][j] = true;
         }
     }
-    
+
+    board->firstMove = true;
+}
+
+void placeMines(struct Board* board, int safeRow, int safeCol) {
+
     srand(time(NULL));
+
     int minesPlaced = 0;
+
     while (minesPlaced < board->nrOfMines) {
-        int n = rand() % board->rows;
-        int m = rand() % board->cols;
-        if (!board->mine[n][m]) {
-            board->mine[n][m] = true;
-            minesPlaced++;
+
+        int r = rand() % board->rows;
+        int c = rand() % board->cols;
+
+        // Skip if already a mine
+        if (board->mine[r][c]) {
+            continue;
         }
+
+        // Skip the clicked cell and surrounding cells
+        if (r >= safeRow - 1 && r <= safeRow + 1 &&
+            c >= safeCol - 1 && c <= safeCol + 1) {
+            continue;
+        }
+
+        board->mine[r][c] = true;
+        minesPlaced++;
     }
 
+    // Calculate neighbor counts
     for (int i = 0; i < board->rows; i++) {
         for (int j = 0; j < board->cols; j++) {
             nrMine(board, i, j);
@@ -59,8 +78,14 @@ void start(struct Board* board) {
 }
 
 void open(struct Board* board, int row, int col) {
+
     if (row < 0 || row >= board->rows || col < 0 || col >= board->cols) return;
     if (!board->hidden[row][col]) return;
+
+    if (board->firstMove) {
+        placeMines(board, row, col);
+        board->firstMove = false;
+    }
 
     if (board->mine[row][col]) {
         board->dead = true;
