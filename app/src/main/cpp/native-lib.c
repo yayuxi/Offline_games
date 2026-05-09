@@ -18,17 +18,39 @@ Java_com_example_offline_1games_MinesweeperEngine_initGame(JNIEnv *env, jobject 
 
 JNIEXPORT void JNICALL
 Java_com_example_offline_1games_MinesweeperEngine_openCell(JNIEnv *env, jobject thiz, jint row, jint col) {
-    if (initialized) {
-        open(&currentBoard, row, col);
-    }
+    if (!initialized)
+        return;
+
+    if (row < 0 || row >= currentBoard.rows ||
+        col < 0 || col >= currentBoard.cols)
+        return;
+
+    open(&currentBoard, row, col);
 }
 
 JNIEXPORT jint JNICALL
-Java_com_example_offline_1games_MinesweeperEngine_getCellStatus(JNIEnv *env, jobject thiz, jint row, jint col) {
-    if (!initialized) return -2;
-    if (currentBoard.hidden[row][col]) return -2; // Hidden
-    if (currentBoard.mine[row][col]) return -1;   // Mine
-    return currentBoard.neighborMines[row][col];  // Number of mines
+Java_com_example_offline_1games_MinesweeperEngine_getCellStatus(
+        JNIEnv *env,
+        jobject thiz,
+        jint row,
+        jint col) {
+
+    if (!initialized)
+        return -2;
+
+    // Bounds protection
+    if (row < 0 || row >= currentBoard.rows ||
+        col < 0 || col >= currentBoard.cols) {
+        return -2;
+    }
+
+    if (currentBoard.hidden[row][col])
+        return -2; // Hidden
+
+    if (currentBoard.mine[row][col])
+        return -1; // Mine
+
+    return currentBoard.neighborMines[row][col];
 }
 
 JNIEXPORT jboolean JNICALL
