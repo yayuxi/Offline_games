@@ -42,14 +42,16 @@ fun MinesweeperGame(modifier: Modifier = Modifier) {
     val mines = 15
     
     // boardVersion increments every time we want the UI to refresh
+    var resetTrigger by remember { mutableIntStateOf(0) }
     var boardVersion by remember { mutableIntStateOf(0) }
     var gameOver by remember { mutableStateOf(false) }
+    var hasWon by remember { mutableStateOf(false) }
 
-    LaunchedEffect(boardVersion == 0) {
-        if (boardVersion == 0) {
-            MinesweeperEngine.initGame(rows, cols, mines)
-            gameOver = false
-        }
+    LaunchedEffect(resetTrigger) {
+        MinesweeperEngine.initGame(rows, cols, mines)
+        gameOver = false
+        hasWon = false
+        boardVersion++
     }
 
     Column(
@@ -70,13 +72,22 @@ fun MinesweeperGame(modifier: Modifier = Modifier) {
                 fontSize = 24.sp,
                 modifier = Modifier.padding(8.dp)
             )
+        } else if (hasWon) {
+            Text(
+                text = "YOU WIN!",
+                color = Color(0xFF2E7D32),
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                modifier = Modifier.padding(8.dp)
+            )
         }
 
         Box(modifier = Modifier.weight(1f)) {
             MinesweeperGrid(rows, cols, boardVersion, onCellClick = { r, c ->
-                if (!gameOver) {
+                if (!gameOver && !hasWon) {
                     MinesweeperEngine.openCell(r, c)
                     gameOver = MinesweeperEngine.isGameOver()
+                    hasWon = MinesweeperEngine.hasWon()
                     boardVersion++ // Force recomposition of all cells
                 }
             })
@@ -84,8 +95,7 @@ fun MinesweeperGame(modifier: Modifier = Modifier) {
 
         Button(
             onClick = { 
-                boardVersion = 0 
-                // We'll reset it to 0 and the LaunchedEffect will re-init
+                resetTrigger++ // Trigger a new game
             },
             modifier = Modifier.padding(16.dp)
         ) {
@@ -110,10 +120,12 @@ fun MinesweeperGrid(rows: Int, cols: Int, version: Int, onCellClick: (Int, Int) 
             
             // We use the 'version' key to make sure this re-calculates 
             // every time boardVersion changes.
-            val status = remember(version) { MinesweeperEngine.getCellStatus(r, c) }
+            key(version) {
+                val status = MinesweeperEngine.getCellStatus(r, c)
 
-            MinesweeperCell(status = status) {
-                onCellClick(r, c)
+                MinesweeperCell(status = status) {
+                    onCellClick(r, c)
+                }
             }
         }
     }

@@ -63,8 +63,8 @@ void open(struct Board* board, int row, int col) {
     if (!board->hidden[row][col]) return;
 
     if (board->mine[row][col]) {
-        board->hidden[row][col] = false;
         board->dead = true;
+        revealAll(board);
         return;
     }
 
@@ -77,6 +77,34 @@ void open(struct Board* board, int row, int col) {
                     open(board, row + i, col + j);
                 }
             }
+        }
+    }
+}
+
+bool hasWon(struct Board* board) {
+
+    // You cannot win if you're dead
+    if (board->dead) {
+        return false;
+    }
+
+    for (int i = 0; i < board->rows; i++) {
+        for (int j = 0; j < board->cols; j++) {
+
+            // Any hidden non-mine means game continues
+            if (!board->mine[i][j] && board->hidden[i][j]) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void revealAll(struct Board* board) {
+    for (int i = 0; i < board->rows; i++) {
+        for (int j = 0; j < board->cols; j++) {
+            board->hidden[i][j] = false;
         }
     }
 }

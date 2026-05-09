@@ -18,6 +18,8 @@ struct Board {
 void start(struct Board* board);
 void open(struct Board* board, int row, int col);
 void nrMine(struct Board* board, int row, int col);
+bool hasWon(struct Board* board);
+void revealAll(struct Board* board);
 void freeBoard(struct Board* board);
 
 #endif

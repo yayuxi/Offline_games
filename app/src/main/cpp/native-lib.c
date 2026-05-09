@@ -35,3 +35,8 @@ JNIEXPORT jboolean JNICALL
 Java_com_example_offline_1games_MinesweeperEngine_isGameOver(JNIEnv *env, jobject thiz) {
     return initialized && currentBoard.dead;
 }
+
+JNIEXPORT jboolean JNICALL
+Java_com_example_offline_1games_MinesweeperEngine_hasWon(JNIEnv *env, jobject thiz) {
+    return initialized && hasWon(&currentBoard);
+}
