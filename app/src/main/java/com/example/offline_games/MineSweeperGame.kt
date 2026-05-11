@@ -34,12 +34,29 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun MinesweeperGame(
     difficulty: Difficulty,
+    customRows: Int = 10,
+    customCols: Int = 10,
+    customMines: Int = 15,
     onBackToMenu: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val rows = difficulty.rows
-    val cols = difficulty.cols
-    val mines = difficulty.mines
+    val rows =
+        if (difficulty == Difficulty.CUSTOM)
+            customRows
+        else
+            difficulty.rows
+
+    val cols =
+        if (difficulty == Difficulty.CUSTOM)
+            customCols
+        else
+            difficulty.cols
+
+    val mines =
+        if (difficulty == Difficulty.CUSTOM)
+            customMines
+        else
+            difficulty.mines
 
     // boardVersion increments every time we want the UI to refresh
     var resetTrigger by remember { mutableIntStateOf(0) }

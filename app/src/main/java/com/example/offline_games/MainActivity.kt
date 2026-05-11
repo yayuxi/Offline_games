@@ -22,6 +22,7 @@ import com.example.offline_games.ui.theme.Offline_gamesTheme
 
 enum class Screen {
     MENU,
+    CUSTOM,
     GAME
 }
 
@@ -32,7 +33,9 @@ enum class Difficulty(
 ) {
     EASY(8, 8, 10),
     MEDIUM(10, 10, 15),
-    HARD(16, 16, 40)
+    HARD(16, 16, 40),
+
+    CUSTOM(0, 0, 0)
 }
 
 class MainActivity : ComponentActivity() {
@@ -40,6 +43,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            var customRows by remember { mutableIntStateOf(10) }
+            var customCols by remember { mutableIntStateOf(10) }
+            var customMines by remember { mutableIntStateOf(15) }
+
             Offline_gamesTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     var currentScreen by remember {
@@ -52,11 +59,40 @@ class MainActivity : ComponentActivity() {
 
                     when (currentScreen) {
 
+                        Screen.CUSTOM -> {
+
+                            CustomGameScreen(
+                                initialRows = customRows,
+                                initialCols = customCols,
+                                initialMines = customMines,
+
+                                onStartGame = { rows, cols, mines ->
+
+                                    customRows = rows
+                                    customCols = cols
+                                    customMines = mines
+
+                                    selectedDifficulty = Difficulty.CUSTOM
+
+                                    currentScreen = Screen.GAME
+                                },
+
+                                onBack = {
+                                    currentScreen = Screen.MENU
+                                }
+                            )
+                        }
+
                         Screen.MENU -> {
                             MainMenu(
                                 onDifficultySelected = { difficulty ->
-                                    selectedDifficulty = difficulty
-                                    currentScreen = Screen.GAME
+
+                                    if (difficulty == Difficulty.CUSTOM) {
+                                        currentScreen = Screen.CUSTOM
+                                    } else {
+                                        selectedDifficulty = difficulty
+                                        currentScreen = Screen.GAME
+                                    }
                                 },
                                 modifier = Modifier.padding(innerPadding)
                             )
@@ -65,9 +101,15 @@ class MainActivity : ComponentActivity() {
                         Screen.GAME -> {
                             MinesweeperGame(
                                 difficulty = selectedDifficulty,
+
+                                customRows = customRows,
+                                customCols = customCols,
+                                customMines = customMines,
+
                                 onBackToMenu = {
                                     currentScreen = Screen.MENU
                                 },
+
                                 modifier = Modifier.padding(innerPadding)
                             )
                         }
