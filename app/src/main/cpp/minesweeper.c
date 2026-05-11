@@ -4,11 +4,13 @@
 void allocateBoard(struct Board* board) {
     board->mine = malloc(board->rows * sizeof(bool*));
     board->hidden = malloc(board->rows * sizeof(bool*));
+    board->flagged = malloc(board->rows * sizeof(bool*));
     board->neighborMines = malloc(board->rows * sizeof(int*));
 
     for (int i = 0; i < board->rows; i++) {
         board->mine[i] = malloc(board->cols * sizeof(bool));
         board->hidden[i] = malloc(board->cols * sizeof(bool));
+        board->flagged[i] = malloc(board->cols * sizeof(bool));
         board->neighborMines[i] = malloc(board->cols * sizeof(int));
     }
 }
@@ -37,6 +39,7 @@ void start(struct Board* board) {
         for (int j = 0; j < board->cols; j++) {
             board->mine[i][j] = false;
             board->hidden[i][j] = true;
+            board->flagged[i][j] = false;
         }
     }
 
@@ -80,7 +83,7 @@ void placeMines(struct Board* board, int safeRow, int safeCol) {
 void open(struct Board* board, int row, int col) {
 
     if (row < 0 || row >= board->rows || col < 0 || col >= board->cols) return;
-    if (!board->hidden[row][col]) return;
+    if (!board->hidden[row][col]||board->flagged[row][col]) return;
 
     if (board->firstMove) {
         placeMines(board, row, col);
@@ -104,6 +107,20 @@ void open(struct Board* board, int row, int col) {
             }
         }
     }
+}
+
+void toggleFlag(struct Board* board, int row, int col) {
+
+    if (row < 0 || row >= board->rows ||
+        col < 0 || col >= board->cols)
+        return;
+
+    // Cannot flag opened cells
+    if (!board->hidden[row][col])
+        return;
+
+    board->flagged[row][col] =
+            !board->flagged[row][col];
 }
 
 bool hasWon(struct Board* board) {
@@ -138,9 +155,11 @@ void freeBoard(struct Board* board) {
     for (int i = 0; i < board->rows; i++) {
         free(board->mine[i]);
         free(board->hidden[i]);
+        free(board->flagged[i]);
         free(board->neighborMines[i]);
     }
     free(board->mine);
     free(board->hidden);
+    free(board->flagged);
     free(board->neighborMines);
 }

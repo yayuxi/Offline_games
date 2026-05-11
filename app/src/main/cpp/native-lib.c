@@ -28,6 +28,19 @@ Java_com_example_offline_1games_MinesweeperEngine_openCell(JNIEnv *env, jobject 
     open(&currentBoard, row, col);
 }
 
+JNIEXPORT void JNICALL
+Java_com_example_offline_1games_MinesweeperEngine_toggleFlag(
+        JNIEnv *env,
+        jobject thiz,
+        jint row,
+        jint col) {
+
+    if (!initialized)
+        return;
+
+    toggleFlag(&currentBoard, row, col);
+}
+
 JNIEXPORT jint JNICALL
 Java_com_example_offline_1games_MinesweeperEngine_getCellStatus(
         JNIEnv *env,
@@ -44,8 +57,13 @@ Java_com_example_offline_1games_MinesweeperEngine_getCellStatus(
         return -2;
     }
 
-    if (currentBoard.hidden[row][col])
-        return -2; // Hidden
+    if (currentBoard.hidden[row][col]) {
+
+        if (currentBoard.flagged[row][col])
+            return -3;
+
+        return -2;
+    }
 
     if (currentBoard.mine[row][col])
         return -1; // Mine

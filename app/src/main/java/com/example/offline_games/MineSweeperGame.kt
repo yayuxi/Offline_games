@@ -61,6 +61,7 @@ fun MinesweeperGame(
     // boardVersion increments every time we want the UI to refresh
     var resetTrigger by remember { mutableIntStateOf(0) }
     var boardVersion by remember { mutableIntStateOf(0) }
+    var flagMode by remember { mutableStateOf(false) }
     var gameOver by remember { mutableStateOf(false) }
     var hasWon by remember { mutableStateOf(false) }
 
@@ -110,13 +111,31 @@ fun MinesweeperGame(
             key(rows, cols) {
                 MinesweeperGrid(rows, cols, boardVersion, onCellClick = { r, c ->
                     if (!gameOver && !hasWon) {
-                        MinesweeperEngine.openCell(r, c)
+                        if (flagMode) {
+                            MinesweeperEngine.toggleFlag(r, c)
+                        } else {
+                            MinesweeperEngine.openCell(r, c)
+                        }
                         gameOver = MinesweeperEngine.isGameOver()
                         hasWon = MinesweeperEngine.hasWon()
                         boardVersion++
                     }
                 })
             }
+        }
+
+        Button(
+            onClick = {
+                flagMode = !flagMode
+            },
+            modifier = Modifier.padding(bottom = 8.dp)
+        ) {
+            Text(
+                if (flagMode)
+                    "Flag Mode 🚩"
+                else
+                    "Open Mode ⛏️"
+            )
         }
 
         Button(
@@ -171,6 +190,7 @@ fun MinesweeperCell(status: Int, onClick: () -> Unit) {
         when (status) {
             -1 -> Text("💣", fontSize = 18.sp)
             -2 -> { /* Hidden */ }
+            -3 -> Text("🚩", fontSize = 18.sp)
             0 -> { /* Empty space opened */ }
             else -> Text(
                 text = status.toString(),
